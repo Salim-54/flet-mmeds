@@ -1,5 +1,6 @@
 import flet as ft
 from flet import *
+import time
 
 import components
 
@@ -11,22 +12,67 @@ def main(page: ft.Page):
     page.window_height = 800
     page.window_frameless = True
 
-    def open(e):
-        _prescription.visible = False
-        _prescription.update()
-
-        _token_input.visible = True
+    def token_typing(e):
+        _token_input.content.controls[0].color = "white"
+        _token_input.content.controls[0].value = "TOKEN_INPUT"
         _token_input.update()
+
+    def progress_bar(w):
+        return ProgressBar(bgcolor="0xffBDF3FF", color="white", width=w, bar_height=2)
+
+    def to_prescription(s):
+        _token_input.content.controls.insert(1, progress_bar(300))
+        _token_input.update()
+        time.sleep(2)
+        _token_input.content.controls.pop(1)
+        _token_input.update()
+        print(s.control.value)
+        if (s.control.value == "7254"):
+            time.sleep(1)
+            _actual_content.content = _prescription
+            _actual_content.update()
+        else:
+            _token_input.content.controls[0].value = "INVALID_TOKEN"
+            _token_input.content.controls[0].color = "red"
+            _token_input.update()
+            print("Waapi bro")
+
+    def to_waiting(s):
+        pass
+
+    def to_delivering(s):
+        print('assasa')
+        _prescription.controls.insert(1, progress_bar(400))
+        _prescription.update()
+        time.sleep(1.7)
+        _prescription.controls.pop(1)
+        _prescription.update()
+        time.sleep(0.5)
+        _actual_content.content = _delivering
+        _actual_content.update()
+
+    def to_thank_you(s):
+        _actual_content.content = _finish
+        _actual_content.update()
+
+    def open(e):
+        # _prescription.visible = False
+        # _prescription.update()
+
+        # _token_input.visible = True
+        # _token_input.update()
 
         # _btn.visible = False
         # _btn.update()
+        pass
 
     def close(e):
-        _token_input.visible = False
-        _token_input.update()
-        _prescription.visible = True
-        _prescription.update()
-
+        # _token_input.visible = False
+        # _token_input.update()
+        # _prescription.visible = True
+        # _prescription.update()
+        # _actual_content.content = _prescription
+        # _actual_content.update()
         pass
 
     def re_usable_static(key, value):
@@ -60,8 +106,43 @@ def main(page: ft.Page):
             alignment=MainAxisAlignment.SPACE_AROUND,
             vertical_alignment=CrossAxisAlignment.CENTER
         )
+
+    _delivering = Column(
+        # visible=True if screen == 2 else False,
+        controls=[
+            Text("DELIVERING", size=30, color="black"),
+            Container(
+                padding=padding.only(top=10),
+                border_radius=10,
+                width=400,
+                height=200,
+                bgcolor="0xffD3E8EF",
+                alignment=alignment.center,
+                content=Column(
+                    controls=[
+
+                        Column(
+                            expand=True,
+                            controls=[
+                                Text("DRUG 2 Biprophene",
+                                     size=30, color="black"),
+
+                                Text("Coming ...", color="black")
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                            horizontal_alignment=CrossAxisAlignment.CENTER
+                        ),
+
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    horizontal_alignment=CrossAxisAlignment.CENTER
+                )
+            )],
+        alignment=MainAxisAlignment.CENTER,
+        horizontal_alignment=CrossAxisAlignment.CENTER)
+
     _prescription = Column(
-        visible=False,
+        # visible=True if screen == 1 else False,
         controls=[
             Text("PRESCRIPTION", size=30, color="black"),
             Container(
@@ -115,7 +196,7 @@ def main(page: ft.Page):
                                     shape=RoundedRectangleBorder(radius=2),
                                 ),
                                 # on_click=lambda e:print('djdjjddj')
-                                on_click=open
+                                on_click=to_delivering
                             )
                         ),
                     ],
@@ -126,13 +207,14 @@ def main(page: ft.Page):
         alignment=MainAxisAlignment.CENTER,
         horizontal_alignment=CrossAxisAlignment.CENTER)
 
-    _btn = ElevatedButton(text="Elevated button", visible=False, on_click=open)
+    # _btn = ElevatedButton(text="Elevated button", visible=False, on_click=open)
 
     _token_input = Container(
-
+        # visible=True if screen != 1 & screen != 2 & screen != 3 & screen != 4 else False,
         alignment=alignment.center,
         content=Column(
             [
+                # progress_bar(),
                 Text("TOKEN_INPUT", size=30,),
 
                 TextField(
@@ -148,12 +230,31 @@ def main(page: ft.Page):
                     cursor_color=colors.BLACK,
                     keyboard_type=KeyboardType.NUMBER,
                     # on_submit=lambda e: print(e.control.value)
-                    on_submit=close
+                    on_submit=to_prescription,
+                    on_change=token_typing
                 ),
             ],
             alignment=MainAxisAlignment.CENTER,
             horizontal_alignment=CrossAxisAlignment.CENTER
         )
+    )
+
+    _finish = Container(
+        border_radius=10,
+        bgcolor="0xffD3E8EF",
+        width=400,
+        height=200,
+        alignment=alignment.center,
+        content=Text("THANK YOU!!!", size=40, color="black")
+    )
+
+    _actual_content = AnimatedSwitcher(
+        _token_input,
+        transition=ft.AnimatedSwitcherTransition.SCALE,
+        duration=500,
+        reverse_duration=100,
+        switch_in_curve=ft.AnimationCurve.BOUNCE_OUT,
+        switch_out_curve=ft.AnimationCurve.BOUNCE_IN,
     )
 
     _landing_page = Container(
@@ -165,8 +266,11 @@ def main(page: ft.Page):
                 # routes.display(routes.current_step),
                 # ElevatedButton(text="Elevated button", on_click=close),
                 # _btn,
-                _token_input,
-                _prescription,
+                # _token_input,
+                # _prescription,
+                # _delivering,
+                _actual_content,
+
 
                 components.footer(),
             ],
