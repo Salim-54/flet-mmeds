@@ -1,16 +1,27 @@
-import requests
+from time import sleep
 
-url = "http://localhost:3000/api/v1/prescriptions"
-headers = {"Content-Type": "application/json"}
-pay_load = {"token": 7067506, }
-
-response = requests.get(url, json=pay_load)
-
-print(response.status_code)
-print(response.json())
+import flet
+from flet import ListView, Page, Text
 
 
-def check_token(token):
-    response = requests.get(url, json=token)
-    print(response)
-    return response
+def main(page: Page):
+    page.title = "Auto-scrolling ListView"
+
+    lv = ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+
+    count = 1
+
+    for i in range(0, 60):
+        lv.controls.append(Text(f"Line {count}"))
+        count += 1
+
+    page.add(lv)
+
+    for i in range(0, 60):
+        sleep(1)
+        lv.controls.append(Text(f"Line {count}"))
+        count += 1
+        page.update()
+
+
+flet.app(target=main)

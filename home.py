@@ -70,20 +70,16 @@ def main(page: ft.Page):
         time.sleep(1.7)
         _actual_content.content.controls.pop(1)
         _actual_content.update()
-        time.sleep(0.5)
-        _actual_content.content = _delivering
-        _actual_content.update()
-        time.sleep(0.5)
-        _actual_content.content = _delivering
-        _actual_content.update()
-        time.sleep(0.5)
-        _actual_content.content = _delivering
-        _actual_content.update()
-        time.sleep(0.5)
+        for i, med in enumerate(data["medicines"], start=1):
+            time.sleep(2)
+            _actual_content.content = delivering(i, med)
+            _actual_content.update()
+
+        time.sleep(3)
         _actual_content.content = _finish
         _actual_content.update()
 
-        time.sleep(0.5)
+        time.sleep(5)
         to_thank_you()
 
     def to_thank_you():
@@ -113,55 +109,119 @@ def main(page: ft.Page):
 
     def re_usable(number, med, dose, time):
         return Row(controls=[
-            Row(controls=[
-                Text(number, color="black"),
-                Text(med, color="black"),
-            ],
-                alignment=MainAxisAlignment.CENTER,
-                vertical_alignment=CrossAxisAlignment.CENTER),
-            Text(f"{dose}", color="black"),
-            Text(time, color="black"),],
+
+            Container(
+                width=150,
+                alignment=alignment.center_left,
+                content=Row(controls=[
+                    Text(number, color="black", expand=True),
+                    Text(med, color="black"),
+                ],
+                    alignment=MainAxisAlignment.CENTER,
+                    vertical_alignment=CrossAxisAlignment.CENTER),
+            ),
+            Container(
+                width=120,
+                alignment=alignment.center_left,
+                content=Row(controls=[
+                    Text(f"{dose}", color="black"),
+                    Text(time, color="black"),
+                ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    vertical_alignment=CrossAxisAlignment.CENTER),
+            ),
+        ],
             alignment=MainAxisAlignment.SPACE_AROUND,
             vertical_alignment=CrossAxisAlignment.CENTER
         )
 
-    _delivering = Column(
-        # visible=True if screen == 2 else False,
-        controls=[
-            Text("DELIVERING", size=30, color="black"),
-            Container(
-                padding=padding.only(top=10),
-                border_radius=10,
-                width=400,
-                height=200,
-                bgcolor="0xffD3E8EF",
-                alignment=alignment.center,
-                content=Column(
-                    controls=[
+    def delivering(i, med):
+        _delivering = Column(
+            controls=[
+                Text("DELIVERING", size=30, color="black"),
+                Container(
+                    padding=padding.only(top=10),
+                    border_radius=10,
+                    width=400,
+                    height=200,
+                    bgcolor="0xffD3E8EF",
+                    alignment=alignment.center,
+                    content=Column(
+                        controls=[
 
-                        Column(
-                            expand=True,
-                            controls=[
-                                Text("DRUG 2 Biprophene",
-                                     size=30, color="black"),
+                            Column(
+                                expand=True,
+                                controls=[
+                                    Text("DRUG {} {}".format(i, med["medName"]),
+                                         size=30, color="black"),
 
-                                Text("Coming ...", color="black")
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
-                            horizontal_alignment=CrossAxisAlignment.CENTER
-                        ),
+                                    Text("Coming ...", color="black")
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
+                                horizontal_alignment=CrossAxisAlignment.CENTER
+                            ),
 
-                    ],
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    horizontal_alignment=CrossAxisAlignment.CENTER
-                )
-            )],
-        alignment=MainAxisAlignment.CENTER,
-        horizontal_alignment=CrossAxisAlignment.CENTER)
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        horizontal_alignment=CrossAxisAlignment.CENTER
+                    )
+                )],
+            alignment=MainAxisAlignment.CENTER,
+            horizontal_alignment=CrossAxisAlignment.CENTER)
+        return _delivering
 
     #####################################################################
 
     def prescription(values):
+
+        # send page to a page
+        lv = ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+
+        for i, med in enumerate(values['medicines'], start=1):
+            lv.controls.append(re_usable("{}.".format(str(i)), "{}".format(med["medName"]),
+                                         med["medNumber"], "{}".format(med["pattern"])),)
+
+        _statics = Column(
+            expand=True,
+            controls=[
+
+                re_usable_static(
+                    "DOCTOR", values["doctor"]),
+                re_usable_static(
+                    "INSTITUTION", values["institution"]),
+                re_usable_static(
+                    "RECEIVER", values["patient"]),
+                re_usable_static(
+                    "OFFERING DATE", " 02 Dec 2022"),
+                re_usable_static(
+                    "PAYMENT", values["payment"]),
+                Container(
+                    height=10
+                ),
+                Text("MEDS ({})".format(
+                    len(values['medicines'])), color="black"),
+                Container(
+                    height=10
+                ),
+                lv,
+                # word("dmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
+
+
+                # list(values['medicines']),
+
+
+
+                # re_usable("1.", "Biprophene",
+                #           32, "1 - 2 - 3"),
+                # re_usable("1.", "Biprophene",
+                #           32, "1 - 2 - 3"),
+
+
+            ],
+            alignment=MainAxisAlignment.CENTER,
+            horizontal_alignment=CrossAxisAlignment.CENTER
+        )
+
         _prescription = Column(
             # visible=True if screen == 1 else False,
             controls=[
@@ -174,39 +234,8 @@ def main(page: ft.Page):
                     alignment=alignment.center,
                     content=Column(
                         controls=[
+                            _statics,
 
-                            Column(
-                                expand=True,
-                                controls=[
-
-                                    re_usable_static(
-                                        "DOCTOR", values["doctor"]),
-                                    re_usable_static(
-                                        "INSTITUTION", values["institution"]),
-                                    re_usable_static(
-                                        "RECEIVER", values["patient"]),
-                                    re_usable_static(
-                                        "OFFERING DATE", " 02 Dec 2022"),
-                                    re_usable_static(
-                                        "PAYMENT", values["payment"]),
-                                    Container(
-                                        height=10
-                                    ),
-                                    Text(f"MEDS (3)", color="black"),
-                                    Container(
-                                        height=10
-                                    ),
-                                    re_usable("1.", "Biprophene",
-                                              32, "1 - 2 - 3"),
-                                    re_usable("1.", "Biprophene",
-                                              32, "1 - 2 - 3"),
-                                    re_usable("1.", "Biprophene",
-                                              32, "1 - 2 - 3"),
-
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                                horizontal_alignment=CrossAxisAlignment.CENTER
-                            ),
                             Container(
                                 height=40,
                                 margin=margin.only(bottom=10, right=20),
@@ -230,7 +259,14 @@ def main(page: ft.Page):
                 )],
             alignment=MainAxisAlignment.CENTER,
             horizontal_alignment=CrossAxisAlignment.CENTER)
+
+        def list(list):
+            for i in range(len(list)):
+                _prescription.controls[1].content.controls[0].append(re_usable("{}.".format(
+                    i+1), "Biprophene",                                                                        32, "1 - 2 - 3"),)
+            page.update()
         return _prescription
+
     _token_input = Container(
         # visible=True if screen != 1 & screen != 2 & screen != 3 & screen != 4 else False,
         alignment=alignment.center,
@@ -285,12 +321,6 @@ def main(page: ft.Page):
         content=Column(
             [
                 components.header(),
-                # routes.display(routes.current_step),
-                # ElevatedButton(text="Elevated button", on_click=close),
-                # _btn,
-                # _token_input,
-                # _prescription,
-                # _delivering,
                 _actual_content,
 
 
@@ -302,7 +332,6 @@ def main(page: ft.Page):
             begin=alignment.top_left,
             end=Alignment(0.8, 1),
             colors=[
-                # D3E8EF
                 "0xff7A9FA7",
                 "0xffBDF3FF",
             ],
