@@ -1,7 +1,6 @@
 from __future__ import print_function
 import flet as ft
 from flet import *
-import routes
 
 
 def submit(e):
