@@ -4,8 +4,9 @@ import requests
 import time
 
 import components
+import testing
 
-url = "http://localhost:3000/api/v1/prescriptions"
+url = "http://3.91.178.169/api/v1/prescriptions"
 pay_load = {"token": 7067506, }
 
 data = {}
@@ -33,16 +34,27 @@ def main(page: ft.Page):
             print(pay_load)
             response = requests.get(url, json={"token": pay_load})
             if response.status_code == 200:
-                _token_input.content.controls.pop(1)
-                _token_input.update()
                 global data
                 data = response.json()["data"]
                 print(data)
-                time.sleep(2)
-                s.control.value = ""
-                _actual_content.content = prescription(data)
-                _actual_content.update()
-                return response
+
+                if data["payment"] != "paid":
+                    time.sleep(2)
+                    _token_input.content.controls.pop(1)
+                    _token_input.update()
+                    _token_input.content.controls[0].value = "TOKEN IS NOT PAID!!"
+                    _token_input.content.controls[0].color = "red"
+                    _token_input.update()
+                    print("Waapi bro")
+
+                if data["payment"] == "paid":
+                    _token_input.content.controls.pop(1)
+                    _token_input.update()
+                    time.sleep(2)
+                    s.control.value = ""
+                    _actual_content.content = prescription(data)
+                    _actual_content.update()
+                    return response
 
             else:
                 time.sleep(2)
@@ -71,7 +83,6 @@ def main(page: ft.Page):
         _actual_content.content.controls.pop(1)
         _actual_content.update()
         for i, med in enumerate(data["medicines"], start=1):
-            time.sleep(2)
             _actual_content.content = delivering(i, med)
             _actual_content.update()
 
@@ -136,6 +147,7 @@ def main(page: ft.Page):
         )
 
     def delivering(i, med):
+        testing.testing_func(med["medPin"])
         _delivering = Column(
             controls=[
                 Text("DELIVERING", size=30, color="black"),
